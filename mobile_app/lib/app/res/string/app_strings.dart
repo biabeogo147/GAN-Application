@@ -21,4 +21,5 @@ class AppStrings extends Translations {
   static String labelHello = getString('labelHello')!;
   static String detectFake = getString('detectFake')!;
   static String generateImage = getString('generateImage')!;
+  static String chooseFunction = getString('chooseFunction')!;
 }
