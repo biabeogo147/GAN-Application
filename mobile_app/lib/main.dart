@@ -9,6 +9,7 @@ void main() async {
     initialBinding: AppBinding(),
     initialRoute: AppRoute.splash_screen,
     getPages: AppPages.pages,
+    debugShowCheckedModeBanner: false,
     builder: (context, child) {
       return Scaffold(
         body: child,
