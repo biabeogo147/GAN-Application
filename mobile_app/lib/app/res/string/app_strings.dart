@@ -18,4 +18,7 @@ class AppStrings extends Translations {
   }
 
   static String appTitle = getString('appTitle')!;
+  static String labelHello = getString('labelHello')!;
+  static String detectFake = getString('detectFake')!;
+  static String generateImage = getString('generateImage')!;
 }
