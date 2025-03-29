@@ -1,5 +1,5 @@
-from utils import *
 from model import Generator
+from utils.utils import *
 
 
 def inference():

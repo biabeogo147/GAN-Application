@@ -1,5 +1,1 @@
-/data/
-/DCGAN/model/
-/testing_landmark_detect/lbfmodel.yaml
-/LC_3D_MFM/run/pose_pretrained_model.pth
-/.idea
+./model

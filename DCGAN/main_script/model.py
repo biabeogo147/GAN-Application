@@ -1,4 +1,4 @@
-from utils import *
+from utils.utils import *
 
 
 def weights_init(m):

@@ -1,5 +1,5 @@
 from model import Discriminator, Generator, weights_init
-from utils import *
+from utils.utils import *
 
 
 def visual_loss(G_losses, D_losses):

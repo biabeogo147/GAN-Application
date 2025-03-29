@@ -1,5 +1,5 @@
-from utils import *
-
+from utils.utils import *
+from matplotlib import pyplot as plt
 
 if __name__ == "__main__":
     dataloader = data_loader()
