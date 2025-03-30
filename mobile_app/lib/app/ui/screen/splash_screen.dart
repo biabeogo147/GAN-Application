@@ -13,28 +13,54 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _logoAnimation;
-  late Animation<double> _taglineAnimation;
+  late Animation<double> _logoScaleAnimation;
+  late Animation<double> _logoOpacityAnimation;
+  late String tagline;
+  late List<String> words;
+  late List<Animation<double>> _wordAnimations;
 
   @override
   void initState() {
     super.initState();
+
+    // Khởi tạo tagline và words
+    tagline = 'Generating Faces with AI';
+    words = tagline.split(' ');
+
+    // Khởi tạo AnimationController
     _controller = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
     );
-    _logoAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+
+    // Logo animations
+    _logoScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.5, curve: Curves.elasticOut),
+      ),
+    );
+    _logoOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: Interval(0.0, 0.5, curve: Curves.easeIn),
       ),
     );
-    _taglineAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(0.5, 1.0, curve: Curves.easeIn),
-      ),
-    );
+
+    // Tagline animations
+    _wordAnimations = List.generate(words.length, (index) {
+      final startTime = 0.5 + index * 0.5; // in seconds
+      final endTime = startTime + 0.5;
+      final startFraction = startTime / 3.0;
+      final endFraction = endTime / 3.0;
+      return Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(startFraction, endFraction.clamp(0.0, 1.0), curve: Curves.easeIn),
+        ),
+      );
+    });
+
     _controller.forward();
   }
 
@@ -65,28 +91,32 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ScaleTransition(
-                    scale: _logoAnimation,
+                    scale: _logoScaleAnimation,
                     child: FadeTransition(
-                      opacity: _logoAnimation,
+                      opacity: _logoOpacityAnimation,
                       child: Image.asset(
-                        AppImages.appLogo, // Giả định có logo trong AppImages
+                        AppImages.appLogo,
                         width: 300.0,
                         height: 300.0,
-                        // Nếu chưa có logo, thay bằng: FlutterLogo(size: 100.0),
                       ),
                     ),
                   ),
                   SizedBox(height: AppDimens.spaceLarge),
-                  FadeTransition(
-                    opacity: _taglineAnimation,
-                    child: Text(
-                      'Generating Faces with AI',
-                      style: TextStyle(
-                        fontSize: AppDimens.textSizeLarge24,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(words.length, (index) {
+                      return FadeTransition(
+                        opacity: _wordAnimations[index],
+                        child: Text(
+                          words[index] + ' ',
+                          style: TextStyle(
+                            fontSize: AppDimens.textSizeLarge24,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),
