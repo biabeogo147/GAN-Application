@@ -13,7 +13,7 @@ class SplashController extends GetxController {
       LocalStorage().setLanguageApp('vi');
     }
     Get.updateLocale(langString == 'vi' ? const Locale('vi', 'VN') : const Locale('en', 'US'));
-    await Future.delayed(const Duration(milliseconds: 2000));
+    await Future.delayed(const Duration(milliseconds: 20000));
     Get.offNamed(AppRoute.main_screen);
   }
 }

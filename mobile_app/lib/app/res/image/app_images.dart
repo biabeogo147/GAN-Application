@@ -6,4 +6,5 @@ class AppImages {
   static const String icArrowRight = '${_internalImagePath}ic_arrow_right.png';
   static const String qrCode = '${_internalImagePath}qr_code.png';
   static const String scanCard = '${_internalImagePath}scan_card.png';
+  static const String appLogo = '${_internalImagePath}app_logo.png';
 }
