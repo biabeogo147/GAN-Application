@@ -24,7 +24,7 @@ torch.use_deterministic_algorithms(True)
 
 train_progress_path = 'train_progress'
 dataroot = "../data/celeba"
-model_path = 'model'
+model_path = 'models'
 
 workers = 20
 batch_size = 4096
