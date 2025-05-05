@@ -3,4 +3,5 @@ const viStrings = {
   "labelHello": "Xin chào",
   "detectFake": "Phát hiện giả mạo",
   "generateImage": "Tạo ảnh",
+  "chooseFunction": "Chọn chức năng",
 };

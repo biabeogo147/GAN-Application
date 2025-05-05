@@ -6,11 +6,12 @@ import 'package:mobile_app/app/ui/widget/common_screen.dart';
 import 'package:mobile_app/app/ui/widget/touchable_widget.dart';
 import 'package:mobile_app/app/res/string/app_strings.dart';
 import 'package:mobile_app/app/ui/theme/app_colors.dart';
+import 'package:mobile_app/app/res/font/app_fonts.dart';
 
 class MainScreen extends GetView<MainController> {
   const MainScreen({Key? key}) : super(key: key);
 
-  Widget _buildPaymentMethodCard({
+  Widget _buildFunctionButton({
     required bool isShow,
     required VoidCallback onPress,
     required Color color,
@@ -18,7 +19,6 @@ class MainScreen extends GetView<MainController> {
     required String text,
   }) {
     if (!isShow) return const SizedBox.shrink();
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: TouchableWidget(
@@ -84,31 +84,75 @@ class MainScreen extends GetView<MainController> {
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    double heightHeader = (Get.width / 15) * 3.2;
+    double heightHeaderContent = (Get.width / 15) * 3.2 - MediaQuery.of(context).padding.top;
+    return Container(
+      width: Get.width,
+      height: heightHeader,
+      alignment: Alignment.bottomCenter,
+      color: AppColors.white,
+      child: Stack(children: <Widget>[
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: heightHeader - MediaQuery.of(context).padding.top,
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: heightHeaderContent,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 4,
+                      child: Text(AppStrings.chooseFunction.tr,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: AppColors.blackText,
+                          fontFamily: AppFonts.robotoMedium,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    controller.context = context;
     return CommonScreen(
       mainBackgroundColor: AppColors.white,
-      child: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            const SizedBox(height: 70),
-            _buildPaymentMethodCard(
-              isShow: true,
-              onPress: controller.onPressDetectFake,
-              color: AppColors.lightGreen,
-              img: AppImages.qrCode,
-              text: AppStrings.detectFake.tr,
-            ),
-            _buildPaymentMethodCard(
-              isShow: true,
-              onPress: controller.onPressGenerateImage,
-              color: AppColors.primary,
-              img: AppImages.scanCard,
-              text: AppStrings.generateImage.tr,
-            ),
-          ],
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              _buildHeader(context),
+              const SizedBox(height: 70),
+              _buildFunctionButton(
+                isShow: true,
+                onPress: controller.onPressDetectFake,
+                color: AppColors.lightGreen,
+                img: AppImages.qrCode,
+                text: AppStrings.detectFake.tr,
+              ),
+              _buildFunctionButton(
+                isShow: true,
+                onPress: controller.onPressGenerateImage,
+                color: AppColors.primary,
+                img: AppImages.scanCard,
+                text: AppStrings.generateImage.tr,
+              ),
+            ],
+          ),
         ),
       ),
     );
