@@ -151,14 +151,6 @@ class MainScreen extends GetView<MainController> {
                 img: AppImages.scanCard,
                 text: AppStrings.generateImage.tr,
               ),
-              // Add the new Capture Image button here
-              _buildFunctionButton(
-                isShow: true,
-                onPress: controller.onPressCaptureImage,
-                color: AppColors.orange,
-                img: AppImages.scanCard, // Use an appropriate camera icon from your assets
-                text: "Capture Image", // Or use AppStrings if you have a constant for this
-              ),
             ],
           ),
         ),

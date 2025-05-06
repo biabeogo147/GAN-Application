@@ -37,7 +37,7 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
                     Expanded(
                       flex: 4,
                       child: Text(
-                        "Face Detection",
+                        controller.screenTitle,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 20,
@@ -74,7 +74,7 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
             ),
             child: Center(
               child: Text(
-                "Analyze Face",
+                controller.actionButtonText,
                 style: TextStyle(
                   color: AppColors.white,
                   fontSize: 18,

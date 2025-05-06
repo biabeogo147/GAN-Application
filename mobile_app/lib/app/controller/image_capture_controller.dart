@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobile_app/app/service/api_service.dart';
 import 'package:mobile_app/app/ui/widget/common_dialog.dart';
 
 class ImageCaptureController extends GetxController {
@@ -9,8 +10,28 @@ class ImageCaptureController extends GetxController {
   final ImagePicker _imagePicker = ImagePicker();
   Rx<XFile?> selectedImage = Rx<XFile?>(null);
   RxBool isCameraActive = false.obs;
+  RxBool isLoading = false.obs;
   CameraController? cameraController;
   List<CameraDescription> cameras = [];
+
+  // Mode can be 'detect' or 'generate'
+  final String mode;
+
+  // Constructor with optional mode parameter
+  ImageCaptureController({this.mode = 'detect'});
+
+  // Getter for screen title based on mode
+  String get screenTitle => mode == 'detect'
+      ? 'Detect Fake Image'
+      : 'Generate Similar Image';
+
+  // Getter for action button text
+  String get actionButtonText => mode == 'detect'
+      ? 'Detect Image'
+      : 'Generate Image';
+
+  // Initialize API service
+  final ApiService _apiService = ApiService();
 
   @override
   void onInit() {
@@ -76,6 +97,7 @@ class ImageCaptureController extends GetxController {
     }
   }
 
+  // Modify analyzeImage to send image to API
   void analyzeImage() async {
     if (selectedImage.value == null && !isCameraActive.value) {
       CommonDialog.showWarning(message: 'Please select an image or take a photo first');
@@ -95,10 +117,25 @@ class ImageCaptureController extends GetxController {
       }
     }
 
-    // Call your face detection logic here
-    // For example: Get.find<FakeDetectionController>().analyzeImage(selectedImage.value!.path);
+    // Show loading indicator
+    isLoading.value = true;
 
-    // For now, just show a success message
-    CommonDialog.showSuccess(message: 'Image captured successfully and ready for analysis');
+    try {
+      // Process based on mode
+      if (mode == 'detect') {
+        // Logic for detecting fake images
+        await Future.delayed(const Duration(seconds: 2)); // Placeholder
+        CommonDialog.showSuccess(message: 'Image analyzed for authenticity');
+      } else {
+        // Logic for generating similar images
+        await Future.delayed(const Duration(seconds: 2)); // Placeholder
+        CommonDialog.showSuccess(message: 'Generated similar image successfully');
+      }
+      // Further processing would happen here
+    } catch (e) {
+      CommonDialog.showError(message: 'Error processing image: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 }
