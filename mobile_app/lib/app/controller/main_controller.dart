@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
-import '../ui/screen/image_capture.dart';
+import '../ui/screen/image_capture_screen.dart';
 import 'image_capture_controller.dart';
 
 class MainController extends GetxController {
@@ -12,18 +12,18 @@ class MainController extends GetxController {
   }
 
   void onPressDetectFake() {
-    print('onPressDetectFake');
+    // Register the controller with "detect" mode
+    Get.lazyPut(() => ImageCaptureController(mode: 'detect'));
+
+    // Navigate to the image capture screen
+    Get.to(() => const ImageCaptureScreen());
   }
 
   void onPressGenerateImage() {
-    print('onPressGenerateImage');
-  }
+    // Register the controller with "generate" mode
+    Get.lazyPut(() => ImageCaptureController(mode: 'generate'));
 
-  void onPressCaptureImage() {
-    // Register the controller
-    Get.lazyPut(() => ImageCaptureController());
-
-    // Navigate to the screen
+    // Navigate to the image capture screen
     Get.to(() => const ImageCaptureScreen());
   }
 }
