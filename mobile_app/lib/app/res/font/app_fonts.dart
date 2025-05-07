@@ -1,4 +1,8 @@
 class AppFonts {
+  // Font families
+  static const String roboto = 'Roboto';
+
+  // Font styles as string constants
   static const String robotoThin = 'Roboto-Thin';
   static const String robotoBold = 'Roboto-Bold';
   static const String robotoItalic = 'Roboto-Italic';

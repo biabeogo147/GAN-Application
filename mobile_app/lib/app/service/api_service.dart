@@ -8,10 +8,21 @@ class ApiService {
   // final String baseUrl = 'http://10.0.2.2:8000'; // Update with your actual server address
 
   // For iOS Simulator:
-  final String baseUrl = 'http://localhost:8000';
+  // final String baseUrl = 'http://localhost:8000';
 
   // For physical devices:
   // final String baseUrl = 'http://YOUR-COMPUTER-IP:8000';
+
+  String get baseUrl {
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000'; // For Android emulator
+    } else if (Platform.isIOS) {
+      return 'http://localhost:8000'; // For iOS simulator
+    } else {
+      // For physical devices or web testing
+      return 'http://192.168.0.100'; // Replace with your computer's IP
+    }
+  }
 
   // Configure API settings
   ApiService() {
@@ -27,7 +38,7 @@ class ApiService {
   }
 
   // Send image to server
-  Future<Map<String, dynamic>> uploadImage(String imagePath) async {
+  Future<Map<String, dynamic>> uploadImage(String imagePath, {String mode = 'detect'}) async {
     try {
       // Convert image to base64
       final String base64Image = await imageToBase64(imagePath);
@@ -35,6 +46,7 @@ class ApiService {
       // Prepare request data
       final Map<String, dynamic> data = {
         'image': base64Image,
+        'mode': mode,
       };
 
       // Send request to server
