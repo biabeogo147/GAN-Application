@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobile_app/app/controller/results_controller.dart';
 import 'package:mobile_app/app/service/api_service.dart';
 import 'package:mobile_app/app/ui/widget/common_dialog.dart';
+
+import '../binding/results_binding.dart';
+import '../ui/screen/results_screen.dart';
 
 class ImageCaptureController extends GetxController {
   late BuildContext context;
@@ -13,6 +19,12 @@ class ImageCaptureController extends GetxController {
   RxBool isLoading = false.obs;
   CameraController? cameraController;
   List<CameraDescription> cameras = [];
+
+  // Initialize API service
+  final ApiService _apiService = ApiService();
+
+  // Results from the API
+  Rx<Map<String, dynamic>> results = Rx<Map<String, dynamic>>({});
 
   // Mode can be 'detect' or 'generate'
   final String mode;
@@ -29,9 +41,6 @@ class ImageCaptureController extends GetxController {
   String get actionButtonText => mode == 'detect'
       ? 'Detect Image'
       : 'Generate Image';
-
-  // Initialize API service
-  final ApiService _apiService = ApiService();
 
   @override
   void onInit() {
@@ -121,17 +130,35 @@ class ImageCaptureController extends GetxController {
     isLoading.value = true;
 
     try {
+      // Call the API service with the selected image path
+      final response = await _apiService.uploadImage(selectedImage.value!.path, mode: mode);
+
+      // Store the results
+      results.value = response;
+
       // Process based on mode
-      if (mode == 'detect') {
-        // Logic for detecting fake images
-        await Future.delayed(const Duration(seconds: 2)); // Placeholder
-        CommonDialog.showSuccess(message: 'Image analyzed for authenticity');
+      if (response['success'] == true) {
+        // Create and register the results controller
+        final resultsController = ResultsController(
+          imageFile: File(selectedImage.value!.path),
+          results: response,
+          isDetectMode: mode == 'detect',
+        );
+
+        // Put the controller in GetX DI
+        Get.put<ResultsController>(resultsController);
+
+        // Navigate with proper binding
+        Get.to(
+                () => const ResultsScreen(),
+            binding: ResultsBinding(resultsController),
+            routeName: '/results_screen'  // Add route name for logging
+        );
+
+        print("Navigation to ResultsScreen attempted");
       } else {
-        // Logic for generating similar images
-        await Future.delayed(const Duration(seconds: 2)); // Placeholder
-        CommonDialog.showSuccess(message: 'Generated similar image successfully');
+        CommonDialog.showError(message: 'Failed to process image');
       }
-      // Further processing would happen here
     } catch (e) {
       CommonDialog.showError(message: 'Error processing image: $e');
     } finally {

@@ -58,33 +58,37 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
   }
 
   Widget _buildImageOptions() {
-    return Column(
+    return Obx(() => Column(
       children: [
-        Obx(() => controller.selectedImage.value != null || controller.isCameraActive.value
+        controller.selectedImage.value != null || controller.isCameraActive.value
             ? _buildPreviewArea()
-            : _buildOptionsButtons()),
+            : _buildOptionsButtons(),
         const SizedBox(height: 20),
+        // Make sure button is visible and part of the reactive UI
         if (controller.selectedImage.value != null)
-          TouchableWidget(
-            onPressed: controller.analyzeImage,
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Text(
-                controller.actionButtonText,
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          Container(
+            width: double.infinity, // Full width
+            child: TouchableWidget(
+              onPressed: controller.analyzeImage,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  controller.actionButtonText,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
           ),
       ],
-    );
+    ));
   }
 
   Widget _buildOptionsButtons() {
