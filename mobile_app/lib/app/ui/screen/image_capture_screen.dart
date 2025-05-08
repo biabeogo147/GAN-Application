@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:camera/camera.dart';
 import 'package:mobile_app/app/res/font/app_fonts.dart';
 import 'package:mobile_app/app/res/string/app_strings.dart';
 import 'package:mobile_app/app/ui/theme/app_colors.dart';
@@ -64,8 +65,9 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
             ? _buildPreviewArea()
             : _buildOptionsButtons(),
         const SizedBox(height: 20),
-        // Make sure button is visible and part of the reactive UI
-        if (controller.selectedImage.value != null)
+        // Only show main action button when NOT in review mode
+        if (controller.selectedImage.value != null &&
+            !(controller.isCameraActive.value && controller.isReviewingImage.value))
           Container(
             width: double.infinity, // Full width
             child: TouchableWidget(
@@ -173,19 +175,105 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
   Widget _buildPreviewArea() {
     return Obx(() {
       if (controller.isCameraActive.value) {
-        return Container(
-          height: 300,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.lightGrayBackground,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: controller.cameraController?.buildPreview() ??
-              const Center(child: CircularProgressIndicator()),
-        );
+        if (controller.isReviewingImage.value && controller.selectedImage.value != null) {
+          // Review UI remains the same
+          return Column(
+            children: [
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight: Get.height * 0.6,
+                ),
+                child: AspectRatio(
+                  aspectRatio: controller.cameraController!.value.aspectRatio,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.file(
+                      File(controller.selectedImage.value!.path),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Retake button
+                  TouchableWidget(
+                    onPressed: controller.retakePhoto,
+                    height: 50,
+                    width: Get.width * 0.4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "Retake",
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Action button
+                  TouchableWidget(
+                    onPressed: controller.analyzeImage,
+                    height: 50,
+                    width: Get.width * 0.4,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        controller.actionButtonText,
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        } else {
+          // Improved camera preview to prevent distortion
+          return Column(
+            children: [
+              GetBuilder<ImageCaptureController>(
+                id: 'cameraPreview',
+                builder: (ctrl) => _buildCameraPreview(),
+              ),
+              const SizedBox(height: 20),
+              // Camera capture button
+              TouchableWidget(
+                onPressed: controller.captureForReview,
+                height: 60,
+                width: 60,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.camera,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+            ],
+          );
+        }
       } else if (controller.selectedImage.value != null) {
         return Container(
-          height: 400,
+          constraints: BoxConstraints(
+            maxHeight: Get.height * 0.5,
+          ),
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.lightGrayBackground,
@@ -204,6 +292,84 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
         return const SizedBox.shrink();
       }
     });
+  }
+
+  Widget _buildCameraPreview() {
+    if (controller.isSwitchingCamera.value) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10),
+        height: 300,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: AppColors.grayBorder),
+          color: Colors.black,
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (controller.cameraController == null ||
+        !controller.cameraController!.value.isInitialized) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10),
+        height: 300,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: AppColors.grayBorder),
+          color: Colors.black,
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final size = Get.size;
+    final double previewRatio = controller.cameraController!.value.aspectRatio;
+    double scale = size.aspectRatio * previewRatio;
+    if (scale < 1) scale = 1 / scale;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.grayBorder),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: Stack(
+          children: [
+            Transform.scale(
+              scale: scale,
+              child: Center(
+                child: CameraPreview(controller.cameraController!),
+              ),
+            ),
+            // Camera switch button
+            Positioned(
+              top: 20,
+              right: 20,
+              child: TouchableWidget(
+                onPressed: controller.toggleCamera,
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.flip_camera_ios,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override

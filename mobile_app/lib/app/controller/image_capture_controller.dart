@@ -16,7 +16,10 @@ class ImageCaptureController extends GetxController {
   final ImagePicker _imagePicker = ImagePicker();
   Rx<XFile?> selectedImage = Rx<XFile?>(null);
   RxBool isCameraActive = false.obs;
+  RxBool isReviewingImage = false.obs;
   RxBool isLoading = false.obs;
+  RxBool isFrontCamera = true.obs; // Default to front camera as current setup
+  RxBool isSwitchingCamera = false.obs;
   CameraController? cameraController;
   List<CameraDescription> cameras = [];
 
@@ -62,6 +65,51 @@ class ImageCaptureController extends GetxController {
     }
   }
 
+  Future<void> initializeCamera() async {
+    if (cameras.isEmpty) return;
+
+    final cameraDescription = cameras.firstWhere(
+          (camera) => camera.lensDirection ==
+          (isFrontCamera.value ? CameraLensDirection.front : CameraLensDirection.back),
+      orElse: () => cameras[0],
+    );
+
+    cameraController = CameraController(
+      cameraDescription,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
+    try {
+      await cameraController!.initialize();
+      if (!isCameraActive.value) {
+        isCameraActive.value = true;
+      }
+      update(['cameraPreview']);
+    } catch (e) {
+      CommonDialog.showError(message: 'Failed to initialize camera: $e');
+    }
+  }
+
+  Future<void> toggleCamera() async {
+    if (cameras.length < 2) return;
+
+    isSwitchingCamera.value = true;
+    isFrontCamera.value = !isFrontCamera.value;
+
+    // Recreate the camera controller with the new camera
+    if (cameraController != null) {
+      await cameraController!.dispose();
+      cameraController = null;
+    }
+
+    await initializeCamera();
+    isSwitchingCamera.value = false;
+
+    // Force UI refresh
+    update(['cameraPreview']);
+  }
+
   void captureImage() async {
     if (cameras.isEmpty) {
       await _initCameras();
@@ -73,22 +121,9 @@ class ImageCaptureController extends GetxController {
 
     selectedImage.value = null;
 
-    cameraController = CameraController(
-      // Use front camera for face detection
-      cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.front,
-        orElse: () => cameras[0],
-      ),
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
-
-    try {
-      await cameraController!.initialize();
-      isCameraActive.value = true;
-    } catch (e) {
-      CommonDialog.showError(message: 'Failed to initialize camera: $e');
-    }
+    // Wait for camera initialization to complete before showing UI
+    await initializeCamera();
+    isCameraActive.value = true;
   }
 
   void pickImageFromGallery() async {
@@ -106,6 +141,22 @@ class ImageCaptureController extends GetxController {
     }
   }
 
+  void captureForReview() async {
+    try {
+      final XFile image = await cameraController!.takePicture();
+      selectedImage.value = image;
+      isReviewingImage.value = true;
+      // Don't turn off camera yet
+    } catch (e) {
+      CommonDialog.showError(message: 'Failed to take picture: $e');
+    }
+  }
+
+  void retakePhoto() {
+    selectedImage.value = null;
+    isReviewingImage.value = false;
+  }
+
   // Modify analyzeImage to send image to API
   void analyzeImage() async {
     if (selectedImage.value == null && !isCameraActive.value) {
@@ -115,16 +166,13 @@ class ImageCaptureController extends GetxController {
 
     // If using camera, capture the image
     if (isCameraActive.value) {
-      try {
-        final XFile image = await cameraController!.takePicture();
-        selectedImage.value = image;
-        isCameraActive.value = false;
-        await cameraController!.dispose();
-      } catch (e) {
-        CommonDialog.showError(message: 'Failed to take picture: $e');
-        return;
-      }
+      // final XFile image = await cameraController!.takePicture();
+      // selectedImage.value = image;
+      isCameraActive.value = false;
+      await cameraController!.dispose();
     }
+
+    isReviewingImage.value = false;
 
     // Show loading indicator
     isLoading.value = true;
