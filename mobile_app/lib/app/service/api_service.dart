@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:mobile_app/app/ui/widget/common_dialog.dart';
 
 class ApiService {
@@ -13,21 +14,21 @@ class ApiService {
   // For physical devices:
   // final String baseUrl = 'http://YOUR-COMPUTER-IP:8000';
 
-  String get baseUrl {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8000'; // For Android emulator
-    } else if (Platform.isIOS) {
-      return 'http://localhost:8000'; // For iOS simulator
-    } else {
-      // For physical devices or web testing
-      return 'http://192.168.0.100'; // Replace with your computer's IP
-    }
-  }
+  final String baseUrl = 'https://e02d-2402-9d80-270-5191-e99d-51f7-3058-c98b.ngrok-free.app';
 
   // Configure API settings
   ApiService() {
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
+
+    // Allow untrusted certificates for development
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+        createHttpClient: () {
+          final client = HttpClient();
+          client.badCertificateCallback = (cert, host, port) => true;
+          return client;
+        }
+    );
   }
 
   // Convert image file to base64

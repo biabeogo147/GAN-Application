@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Body
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import base64
 import io
@@ -7,6 +8,14 @@ import uvicorn
 import numpy as np
 
 app = FastAPI(title="GAN Image Processing API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 class ImageRequest(BaseModel):
     image: str  # Base64 encoded image
