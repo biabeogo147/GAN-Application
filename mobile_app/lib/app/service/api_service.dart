@@ -14,7 +14,7 @@ class ApiService {
   // For physical devices:
   // final String baseUrl = 'http://YOUR-COMPUTER-IP:8000';
 
-  final String baseUrl = 'https://e02d-2402-9d80-270-5191-e99d-51f7-3058-c98b.ngrok-free.app';
+  final String baseUrl = 'https://mature-radically-orca.ngrok-free.app';
 
   // Configure API settings
   ApiService() {
