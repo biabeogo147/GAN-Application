@@ -1,4 +1,4 @@
-from utils.utils import *
+from GAN_models.deep_convolution_GAN.utils.utils import *
 
 
 def weights_init(m):

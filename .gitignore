@@ -1,3 +1,4 @@
 mobile_app/build
 .idea
 GAN_models/progressive_grow_GAN/feature_extractor.pth
+/mobile_app/android/app/build/
