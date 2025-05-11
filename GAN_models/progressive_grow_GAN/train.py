@@ -40,7 +40,7 @@ if __name__ == '__main__':
 		os.makedirs(weight_dir)
 
 	## The schedule contains [num of epoches for starting each size][batch size for each size][num of epoches]
-	schedule = [[5, 15, 25, 35, 40],[8192, 64, 4, 4, 2],[5, 5, 5, 1, 1]]
+	schedule = [[10, 25, 45, 70, 100],[4096, 512, 128, 128, 16],[5, 5, 5, 5, 1, 1]]
 	batch_size = schedule[1][0]
 	growing = schedule[2][0]
 	epochs = opt.epochs
@@ -95,11 +95,12 @@ if __name__ == '__main__':
 
 
 	try:
-		c = next(x[0] for x in enumerate(schedule[0]) if x[1]>opt.resume)-1
+		c = next(x[0] for x in enumerate(schedule[0]) if x[1]>opt.resume)-1 if opt.resume != 0 else 0
 		batch_size = schedule[1][c]
 		growing = schedule[2][c]
 		dataset = datasets.ImageFolder(data_dir, transform=transform)
-		data_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=8, drop_last=True)
+		data_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=12, drop_last=True)
+
 
 		tot_iter_num = (len(dataset)/batch_size)
 		G_net.fade_iters = (1-G_net.alpha)/(schedule[0][c+1]-opt.resume)/(2*tot_iter_num)
@@ -111,7 +112,9 @@ if __name__ == '__main__':
 		growing = schedule[2][c]
 
 		dataset = datasets.CelebA(data_dir, split='all', transform=transform)
-		data_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=8, drop_last=True)
+		data_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=12, drop_last=True)
+
+		print(batch_size)
 
 		tot_iter_num = (len(dataset)/batch_size)
 		print(schedule[0][c], opt.resume)
@@ -122,7 +125,9 @@ if __name__ == '__main__':
 
 
 	size = 2**(G_net.depth+1)
-	print("Output Resolution: %d x %d" % (size, size))
+	if (opt.resume == 0):
+		print("Output Resolution: %d x %d" % (4, 4))
+
 
 	for epoch in range(1+opt.resume, opt.epochs+1):
 		G_net.train()
