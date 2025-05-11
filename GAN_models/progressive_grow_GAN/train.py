@@ -219,8 +219,7 @@ if __name__ == '__main__':
 		}
 		with torch.no_grad():
 			G_net.eval()
-			torch.save(G_net.state_dict(), weight_dir + 'G_weight_epoch_%d.pth' % epoch)
-			torch.save(check_point, check_point_dir + 'check_point_epoch_%d.pth' % epoch)
+
 
 			out_imgs = G_net(fixed_noise)
 			out_grid = make_grid(
@@ -229,3 +228,7 @@ if __name__ == '__main__':
 			).permute(1, 2, 0)
 			plt.imshow(out_grid.cpu())
 			plt.savefig(output_dir + 'size_%i_epoch_%d' %(size ,epoch))
+
+		torch.save(D_net.state_dict(), os.path.join(weight_dir, 'discriminator', 'D_weight_epoch_%d.pth' % epoch))
+		torch.save(G_net.state_dict(), os.path.join(weight_dir, 'generator', 'G_weight_epoch_%d.pth' % epoch))
+		torch.save(check_point, check_point_dir + 'check_point_epoch_%d.pth' % epoch)
