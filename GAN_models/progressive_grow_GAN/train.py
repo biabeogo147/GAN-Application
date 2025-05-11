@@ -1,17 +1,15 @@
-import argparse
-import os 
-import numpy as np
-from tqdm import tqdm
+import os
 import torch
+import argparse
+from tqdm import tqdm
 import torch.nn as nn
+import torch.optim as optim
+import matplotlib.pyplot as plt
 import torch.nn.functional as F
+from torchvision import transforms
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
-from torchvision import transforms
-from torchvision.utils import make_grid, save_image
-
-import matplotlib.pyplot as plt
-import torch.optim as optim
+from torchvision.utils import make_grid
 from model import Generator, Discriminator
 
 
@@ -31,9 +29,9 @@ if __name__ == '__main__':
 
 	root = opt.root
 	data_dir = root + 'dataset/'
-	check_point_dir = root + 'check_points/'
-	output_dir = root + 'output/'
 	weight_dir = root+ 'weight/'
+	output_dir = root + 'output/'
+	check_point_dir = root + 'check_points/'
 	if not os.path.exists(check_point_dir):
 		os.makedirs(check_point_dir)
 	if not os.path.exists(output_dir):
@@ -42,7 +40,7 @@ if __name__ == '__main__':
 		os.makedirs(weight_dir)
 
 	## The schedule contains [num of epoches for starting each size][batch size for each size][num of epoches]
-	schedule = [[10, 25, 45, 70, 100], [4096, 512, 128, 128, 16], [5, 5, 5, 5, 1, 1]]
+	schedule = [[7, 18, 30, 55, 70, 100, 125], [4096, 512, 128, 128, 16, 16, 4], [5, 5, 5, 5, 1, 1, 1, 1]]
 	batch_size = schedule[1][0]
 	growing = schedule[2][0]
 	out_res = opt.out_res
@@ -231,7 +229,3 @@ if __name__ == '__main__':
 			out_grid = make_grid(out_imgs, normalize=True, nrow=4, scale_each=True, padding=int(0.5*(2**G_net.depth))).permute(1,2,0)
 			plt.imshow(out_grid.cpu())
 			plt.savefig(output_dir + 'size_%i_epoch_%d' %(size ,epoch))
-
-
-
-
