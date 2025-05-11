@@ -34,6 +34,7 @@ class Pixel_norm(nn.Module):
 class Minibatch_std(nn.Module):
 	def __init__(self):
 		super().__init__()
+
 	def forward(self, x):
 		size = list(x.size())
 		size[1] = 1

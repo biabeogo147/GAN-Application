@@ -1,8 +1,5 @@
 import torch
-
-pth_file_path = "D:\\DS-AI\\train\\check_points\\check_point_epoch_16.pth"
-checkpoint = torch.load(pth_file_path, map_location=torch.device('cpu'))
-print("Type of checkpoint:", type(checkpoint))
+import argparse
 
 
 def print_checkpoint_info():
@@ -45,5 +42,19 @@ def print_checkpoint_config_info():
                 print(f"{attr}: Cannot access")
 
 
-print_checkpoint_info()
-# print_checkpoint_config_info()
+def get_parse():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root', type=str, help='file.pth path')
+    return parser
+
+
+if __name__ == "__main__":
+    opt = get_parse().parse_args()
+    # pth_file_path = opt.root
+
+    pth_file_path = "D:\\DS-AI\\train\\check_points\\check_point_epoch_16.pth"
+    checkpoint = torch.load(pth_file_path, map_location=torch.device('cpu'))
+    print("Type of checkpoint:", type(checkpoint))
+
+    print_checkpoint_info()
+    # print_checkpoint_config_info()

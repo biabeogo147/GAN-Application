@@ -50,11 +50,11 @@ if __name__ == '__main__':
 	lr = 1e-4
 
 	transform = transforms.Compose([
-				transforms.Resize(out_res),
-				transforms.CenterCrop(out_res),
-				transforms.ToTensor(),
-				transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-				])
+		transforms.Resize(out_res),
+		transforms.CenterCrop(out_res),
+		transforms.ToTensor(),
+		transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+	])
 
 
 	D_net = Discriminator(latent_size, out_res).to(device)
@@ -95,15 +95,17 @@ if __name__ == '__main__':
 		c = next(x[0] for x in enumerate(schedule[0]) if x[1]>opt.resume)-1 if opt.resume != 0 else 0
 		batch_size = schedule[1][c]
 		growing = schedule[2][c]
+
 		dataset = datasets.ImageFolder(data_dir, transform=transform)
 		data_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=12, drop_last=True)
-
 
 		tot_iter_num = (len(dataset)/batch_size)
 		G_net.fade_iters = (1-G_net.alpha)/(schedule[0][c+1]-opt.resume)/(2*tot_iter_num)
 		D_net.fade_iters = (1-D_net.alpha)/(schedule[0][c+1]-opt.resume)/(2*tot_iter_num)
+
 	except Exception as e:
 		print('Fully Grown\n')
+
 		c = 0
 		batch_size = schedule[1][c]
 		growing = schedule[2][c]
@@ -146,7 +148,7 @@ if __name__ == '__main__':
 		databar = tqdm(data_loader)
 
 		for i, samples in enumerate(databar):
-			##  update D
+			## Update D
 			if size != out_res:
 				samples = F.interpolate(samples[0], size=size).to(device)
 			else:
@@ -158,7 +160,6 @@ if __name__ == '__main__':
 			real_out = D_net(samples)
 
 			## Gradient Penalty
-
 			eps = torch.rand(samples.size(0), 1, 1, 1, device=device)
 			eps = eps.expand_as(samples)
 			x_hat = eps * samples + (1 - eps) * fake.detach()
@@ -172,15 +173,11 @@ if __name__ == '__main__':
 			grad_norm = grad.view(samples.size(0), -1).norm(2, dim=1)
 			gradient_penalty = lambd * ((grad_norm  - 1)**2).mean()
 
-			###########
-
 			D_loss = fake_out.mean() - real_out.mean() + gradient_penalty
-
 			D_loss.backward()
 			D_optimizer.step()
 
-			##	update G
-
+			## Update G
 			G_net.zero_grad()
 			fake_out = D_net(fake)
 
@@ -195,9 +192,7 @@ if __name__ == '__main__':
 			G_running_loss += G_loss.item()
 
 			iter_num += 1
-
-
-			if i % 500== 0:
+			if i % 500 == 0:
 				D_running_loss /= iter_num
 				G_running_loss /= iter_num
 				# print('iteration : %d, gp: %.2f' % (i, gradient_penalty))
@@ -211,21 +206,26 @@ if __name__ == '__main__':
 		G_epoch_losses.append(G_epoch_loss/tot_iter_num)
 
 
-		check_point = {'G_net' : G_net.state_dict(),
-					   'G_optimizer' : G_optimizer.state_dict(),
-					   'D_net' : D_net.state_dict(),
-					   'D_optimizer' : D_optimizer.state_dict(),
-					   'D_epoch_losses' : D_epoch_losses,
-					   'G_epoch_losses' : G_epoch_losses,
-					   'fixed_noise': fixed_noise,
-					   'depth': G_net.depth,
-					   'alpha':G_net.alpha
-					   }
+		check_point = {
+			'G_net' : G_net.state_dict(),
+			'G_optimizer' : G_optimizer.state_dict(),
+			'D_net' : D_net.state_dict(),
+			'D_optimizer' : D_optimizer.state_dict(),
+			'D_epoch_losses' : D_epoch_losses,
+			'G_epoch_losses' : G_epoch_losses,
+			'fixed_noise': fixed_noise,
+			'depth': G_net.depth,
+			'alpha':G_net.alpha
+		}
 		with torch.no_grad():
 			G_net.eval()
-			torch.save(check_point, check_point_dir + 'check_point_epoch_%d.pth' % (epoch))
-			torch.save(G_net.state_dict(), weight_dir + 'G_weight_epoch_%d.pth' %(epoch))
+			torch.save(G_net.state_dict(), weight_dir + 'G_weight_epoch_%d.pth' % epoch)
+			torch.save(check_point, check_point_dir + 'check_point_epoch_%d.pth' % epoch)
+
 			out_imgs = G_net(fixed_noise)
-			out_grid = make_grid(out_imgs, normalize=True, nrow=4, scale_each=True, padding=int(0.5*(2**G_net.depth))).permute(1,2,0)
+			out_grid = make_grid(
+				out_imgs, normalize=True, nrow=4, scale_each=True,
+				padding=int(0.5 * (2 ** G_net.depth))
+			).permute(1, 2, 0)
 			plt.imshow(out_grid.cpu())
 			plt.savefig(output_dir + 'size_%i_epoch_%d' %(size ,epoch))
