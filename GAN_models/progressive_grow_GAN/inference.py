@@ -2,11 +2,12 @@ import os
 import torch
 import argparse
 import numpy as np
+import torchvision
 from PIL import Image
-from torchvision.transforms import ToTensor
-
-from model import Generator, Discriminator
+from matplotlib import pyplot as plt
 from torchvision.utils import save_image
+from model import Generator, Discriminator
+from torchvision.transforms import ToTensor
 
 
 def get_parser():
@@ -72,7 +73,21 @@ if __name__ == '__main__':
 	latent_size = 512
 
 	# gen_image(opt.out_dir, opt.out_res, opt.weight)
-	extract_feature(opt.out_res, opt.weight, opt.image)
+	# extract_feature(opt.out_res, opt.weight, opt.image)
+
+	use_gpu = True if torch.cuda.is_available() else False
+	model = torch.hub.load('facebookresearch/pytorch_GAN_zoo:hub',
+						   'PGAN', model_name='celebAHQ-512',
+						   pretrained=True, useGPU=use_gpu)
+	gnet = model.netG.to(device)
+	noise, _ = model.buildNoiseData(1)
+	with torch.no_grad():
+		image = gnet(noise)
+	image = image.to('cpu')
+	grid = torchvision.utils.make_grid(image.clamp(min=-1, max=1), scale_each=True, normalize=True)
+	plt.imshow(grid.permute(1, 2, 0).cpu().numpy())
+	plt.axis('off')
+	plt.show()
 
 
 

@@ -40,7 +40,7 @@ if __name__ == '__main__':
 		os.makedirs(weight_dir)
 
 	## The schedule contains [num of epoches for starting each size][batch size for each size][num of epoches]
-	schedule = [[7, 18, 30, 55, 70, 100, 125], [4096, 512, 128, 128, 16, 16, 4], [5, 5, 5, 5, 1, 1, 1, 1]]
+	schedule = [[7, 18, 25, 35, 45, 55, 65], [1024, 128, 64, 64, 16, 16, 4], [5, 5, 5, 5, 1, 1, 1, 1]]
 	batch_size = schedule[1][0]
 	growing = schedule[2][0]
 	out_res = opt.out_res
@@ -229,6 +229,10 @@ if __name__ == '__main__':
 			plt.imshow(out_grid.cpu())
 			plt.savefig(output_dir + 'size_%i_epoch_%d' %(size ,epoch))
 
+		if not os.path.exists(os.path.join(weight_dir, 'discriminator')):
+			os.makedirs(os.path.join(weight_dir, 'discriminator'))
+		if not os.path.exists(os.path.join(weight_dir, 'generator')):
+			os.makedirs(os.path.join(weight_dir, 'generator'))
 		torch.save(D_net.state_dict(), os.path.join(weight_dir, 'discriminator', 'D_weight_epoch_%d.pth' % epoch))
 		torch.save(G_net.state_dict(), os.path.join(weight_dir, 'generator', 'G_weight_epoch_%d.pth' % epoch))
 		torch.save(check_point, check_point_dir + 'check_point_epoch_%d.pth' % epoch)
