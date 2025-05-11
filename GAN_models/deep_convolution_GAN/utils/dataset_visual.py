@@ -1,4 +1,4 @@
-from GAN_models.deep_convolution_GAN.utils.utils import *
+from utils.utils import *
 from matplotlib import pyplot as plt
 
 if __name__ == "__main__":

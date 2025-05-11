@@ -1,5 +1,5 @@
-from model import Generator
-from GAN_models.deep_convolution_GAN.utils.utils import *
+from utils.utils import *
+from main_script.model_mobile_ver import Generator
 
 
 def inference():
