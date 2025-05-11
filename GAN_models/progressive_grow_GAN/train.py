@@ -12,20 +12,22 @@ from torchvision.utils import make_grid, save_image
 
 import matplotlib.pyplot as plt
 import torch.optim as optim
-
 from model import Generator, Discriminator
 
 
-if __name__ == '__main__':
+def get_parse():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--root', type=str, default='./', help='directory contrains the data and outputs')
 	parser.add_argument('--epochs', type=int, default=40, help='training epoch number')
 	parser.add_argument('--out_res', type=int, default=128, help='The resolution of final output image')
 	parser.add_argument('--resume', type=int, default=0, help='continues from epoch number')
 	parser.add_argument('--cuda', action='store_true', help='Using GPU to train')
+	return parser
 
 
-	opt = parser.parse_args()
+if __name__ == '__main__':
+	opt = get_parse().parse_args()
+	device = torch.device('cuda:0' if (torch.cuda.is_available() and opt.cuda)  else 'cpu')
 
 	root = opt.root
 	data_dir = root + 'dataset/'
@@ -40,16 +42,14 @@ if __name__ == '__main__':
 		os.makedirs(weight_dir)
 
 	## The schedule contains [num of epoches for starting each size][batch size for each size][num of epoches]
-	schedule = [[10, 25, 45, 70, 100],[4096, 512, 128, 128, 16],[5, 5, 5, 5, 1, 1]]
+	schedule = [[10, 25, 45, 70, 100], [4096, 512, 128, 128, 16], [5, 5, 5, 5, 1, 1]]
 	batch_size = schedule[1][0]
 	growing = schedule[2][0]
+	out_res = opt.out_res
 	epochs = opt.epochs
 	latent_size = 512
-	out_res = opt.out_res
-	lr = 1e-4
 	lambd = 10
-
-	device = torch.device('cuda:0' if (torch.cuda.is_available() and opt.cuda)  else 'cpu')
+	lr = 1e-4
 
 	transform = transforms.Compose([
 				transforms.Resize(out_res),
@@ -65,7 +65,6 @@ if __name__ == '__main__':
 	fixed_noise = torch.randn(16, latent_size, 1, 1, device=device)
 	D_optimizer = optim.Adam(D_net.parameters(), lr=lr, betas=(0, 0.99))
 	G_optimizer = optim.Adam(G_net.parameters(), lr=lr, betas=(0, 0.99))
-
 
 	D_running_loss = 0.0
 	G_running_loss = 0.0
@@ -125,7 +124,7 @@ if __name__ == '__main__':
 
 
 	size = 2**(G_net.depth+1)
-	if (opt.resume == 0):
+	if opt.resume == 0:
 		print("Output Resolution: %d x %d" % (4, 4))
 
 

@@ -1,4 +1,4 @@
-from model import Discriminator, Generator, weights_init
+from GAN_models.deep_convolution_GAN.main_script.model_mobile_ver import Discriminator, Generator, weights_init
 from GAN_models.deep_convolution_GAN.utils.utils import *
 
 

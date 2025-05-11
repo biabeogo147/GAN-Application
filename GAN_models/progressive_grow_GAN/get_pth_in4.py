@@ -1,9 +1,9 @@
-import json
 import torch
 
-pth_file_path = "feature_extractor.pth"
+pth_file_path = "D:\\DS-AI\\train\\check_points\\check_point_epoch_16.pth"
 checkpoint = torch.load(pth_file_path, map_location=torch.device('cpu'))
 print("Type of checkpoint:", type(checkpoint))
+
 
 def print_checkpoint_info():
     if isinstance(checkpoint, dict):
@@ -31,7 +31,7 @@ def print_checkpoint_info():
 
 
 def print_checkpoint_config_info():
-    config = checkpoint['config']
+    config = checkpoint['D_net']
 
     print("Type of config:", type(config))
 
@@ -44,29 +44,6 @@ def print_checkpoint_config_info():
             except AttributeError:
                 print(f"{attr}: Cannot access")
 
-    if not isinstance(config, dict):
-        config_dict = {attr: getattr(config, attr) for attr in dir(config) if
-                       not attr.startswith('__') and hasattr(config, attr)}
-    else:
-        config_dict = config
-
-    def serialize(obj):
-        if isinstance(obj, torch.Tensor):
-            return obj.tolist()
-        elif isinstance(obj, (int, float, str, bool, list, dict, type(None))):
-            return obj
-        else:
-            return str(obj)
-
-    config_serializable = {key: serialize(value) for key, value in config_dict.items()}
-
-    config_json = json.dumps(config_serializable, indent=2)
-
-    with open('PGAN512_train_config.json', 'w') as json_file:
-        json_file.write(config_json)
-
 
 print_checkpoint_info()
-print_checkpoint_config_info()
-
-
+# print_checkpoint_config_info()
