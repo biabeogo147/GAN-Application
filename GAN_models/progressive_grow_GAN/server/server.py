@@ -1,15 +1,17 @@
-import random
-
-from fastapi import FastAPI, HTTPException, Body
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import base64
+import os
 import io
-from PIL import Image
+import sys
+import base64
+import random
 import uvicorn
 import numpy as np
-
+from PIL import Image
+from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Body
+from fastapi.middleware.cors import CORSMiddleware
 from model.server_process import gen_image, fake_detect
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 app = FastAPI(title="GAN Image Processing API")
 
@@ -21,13 +23,18 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-class ImageRequest(BaseModel):
+class DetectionImageRequest(BaseModel):
     image: str  # Base64 encoded image
     mode: str = "detect"  # "detect" or "generate"
 
 
-@app.post("/api/process-image")
-async def process_image(request: ImageRequest):
+class GenerationImageRequest(BaseModel):
+    type: str  # "random" or "text-to-image"
+    description: str = None  # Optional description for text-to-image generation
+
+
+@app.get("/api/process-image")
+async def process_image(request: DetectionImageRequest):
     try:
         # Decode base64 image
         image_bytes = base64.b64decode(request.image)
@@ -63,10 +70,10 @@ async def process_image(request: ImageRequest):
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
 
-@app.post("/api/generate-face")
-async def generate_face(request: dict = Body(...)):
+@app.get("/api/generate-face")
+async def generate_face(request: GenerationImageRequest):
     try:
-        generation_type = request.get("type", "random")
+        generation_type = request.type
 
         generated = None
         if generation_type == "random":
