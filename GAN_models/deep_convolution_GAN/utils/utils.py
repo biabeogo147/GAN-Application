@@ -23,13 +23,13 @@ torch.manual_seed(manualSeed)
 torch.use_deterministic_algorithms(True)
 
 train_progress_path = 'train_progress'
-dataroot = "../data/celeba"
+dataroot = "D:\\DS-AI\\train\\dataset"
 model_path = 'models'
 
 workers = 20
 batch_size = 4096
 image_size = 64
-num_epochs = 1000
+num_epochs = 250
 lr = 0.0002
 
 

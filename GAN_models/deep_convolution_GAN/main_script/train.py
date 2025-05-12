@@ -42,6 +42,10 @@ def compare_real_fake(dataloader, img_list):
 
 
 def train():
+    # Ensure the directory exists
+    os.makedirs(train_progress_path, exist_ok=True)
+    os.makedirs(model_path, exist_ok=True)
+
     netG = Generator(ngpu).to(device).apply(weights_init)
     netD = Discriminator(ngpu).to(device).apply(weights_init)
     optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
@@ -115,6 +119,8 @@ def train():
 
         with torch.no_grad():
             fake = netG(fixed_noise).detach().cpu()
+
+        # Save the images
         visual_g_progression(fake, epoch)
 
         checkpoint = {
