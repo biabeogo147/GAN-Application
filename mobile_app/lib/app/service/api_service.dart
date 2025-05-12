@@ -6,14 +6,6 @@ import 'package:mobile_app/app/ui/widget/common_dialog.dart';
 
 class ApiService {
   final Dio _dio = Dio();
-  // final String baseUrl = 'http://10.0.2.2:8000'; // Update with your actual server address
-
-  // For iOS Simulator:
-  // final String baseUrl = 'http://localhost:8000';
-
-  // For physical devices:
-  // final String baseUrl = 'http://YOUR-COMPUTER-IP:8000';
-
   final String baseUrl = 'https://mature-radically-orca.ngrok-free.app';
 
   // Configure API settings
@@ -39,7 +31,7 @@ class ApiService {
   }
 
   // Send image to server
-  Future<Map<String, dynamic>> uploadImage(String imagePath, {String mode = 'detect'}) async {
+  Future<Map<String, dynamic>> detectFakeImage(String imagePath) async {
     try {
       // Convert image to base64
       final String base64Image = await imageToBase64(imagePath);
@@ -47,7 +39,7 @@ class ApiService {
       // Prepare request data
       final Map<String, dynamic> data = {
         'image': base64Image,
-        'mode': mode,
+        'mode': 'detect',
       };
 
       // Send request to server
@@ -59,6 +51,39 @@ class ApiService {
       return response.data;
     } catch (e) {
       CommonDialog.showError(message: 'Failed to upload image: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  // Generate random face
+  Future<Map<String, dynamic>> generateRandomFace() async {
+    try {
+      final response = await _dio.post(
+        '$baseUrl/api/generate-face',
+        data: {'type': 'random'},
+      );
+
+      return response.data;
+    } catch (e) {
+      CommonDialog.showError(message: 'Failed to generate random face: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  // Generate face from text description
+  Future<Map<String, dynamic>> generateFaceFromText(String description) async {
+    try {
+      final response = await _dio.post(
+        '$baseUrl/api/generate-face',
+        data: {
+          'type': 'text-to-image',
+          'description': description
+        },
+      );
+
+      return response.data;
+    } catch (e) {
+      CommonDialog.showError(message: 'Failed to generate face from description: $e');
       return {'error': e.toString()};
     }
   }
