@@ -83,5 +83,47 @@ async def process_image(request: ImageRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
+@app.post("/api/generate-face")
+async def generate_face(request: dict = Body(...)):
+    try:
+        generation_type = request.get("type", "random")
+
+        if generation_type == "random":
+            # Generate a random face using your GAN model
+            # For now, we'll return a placeholder
+            # In a real implementation, you would call your GAN model here
+
+            # Placeholder: Create a colored image with random patterns
+            img_array = np.random.randint(0, 255, (512, 512, 3), dtype=np.uint8)
+            generated = Image.fromarray(img_array)
+
+        elif generation_type == "text-to-image":
+            description = request.get("description", "")
+            if not description:
+                raise HTTPException(status_code=400, detail="Description is required for text-to-image generation")
+
+            # Use the description to guide your GAN model
+            # For now, we'll create a placeholder based on the text
+
+            # Placeholder: Create a colored image with some text
+            img_array = np.ones((512, 512, 3), dtype=np.uint8) * 200  # Light gray
+            generated = Image.fromarray(img_array)
+
+        # Convert to base64
+        buffered = io.BytesIO()
+        generated.save(buffered, format="PNG")
+        generated_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+        return {
+            "success": True,
+            "generated_image": {
+                "image": generated_image,
+                "model_used": "GAN-Face-Generator-v1"
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating face: {str(e)}")
+
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)

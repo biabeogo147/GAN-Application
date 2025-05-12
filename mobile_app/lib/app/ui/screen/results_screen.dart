@@ -140,50 +140,60 @@ class ResultsScreen extends GetView<ResultsController> {
     final modelUsed = generatedImage["model_used"];
     final imageBase64 = generatedImage["image"];
 
+    // Check if we have description (for text-to-image)
+    final hasDescription = controller.results["description"] != null;
+    final description = hasDescription ? controller.results["description"] : "";
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Original image
+          // Generated image (now more prominent)
           Text(
-            "Original Image:",
+            "Generated Face:",
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Image.file(
-              controller.imageFile,
-              height: 200,
-              fit: BoxFit.contain,
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Generated image
-          Text(
-            "Generated Image:",
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Image.memory(
-              base64Decode(imageBase64),
-              height: 200,
-              fit: BoxFit.contain,
             ),
           ),
           const SizedBox(height: 16),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Image.memory(
+                base64Decode(imageBase64),
+                height: 300,
+                width: double.infinity,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Generation details
+          Text(
+            "Generation Details:",
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
           Text("Model used: $modelUsed"),
 
+          // Show description if available
+          if (hasDescription) ...[
+            const SizedBox(height: 8),
+            Text("Description: $description"),
+          ],
+
           // Download button
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
