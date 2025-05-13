@@ -40,6 +40,8 @@ async def process_image(request: DetectionImageRequest):
         image_bytes = base64.b64decode(request.image)
         image = Image.open(io.BytesIO(image_bytes))
 
+        print("Image format:", image.format)
+
         # Get basic image info
         width, height = image.size
         format_name = image.format
@@ -56,13 +58,14 @@ async def process_image(request: DetectionImageRequest):
         if request.mode == "detect":
             # Here you would add your actual GAN detection logic
             # For now, we'll return a placeholder
-            result = fake_detect(image)
-            isFake = result != "Fake"
+            label = fake_detect(image)
+            isFake = label == "Fake"
             result["detection_result"] = {
                 "is_fake": isFake,
-                "confidence": random.uniform(0.6, 0.8) if isFake else random.uniform(0.1, 0.4),
+                "confidence": random.uniform(0.75, 0.95),  # Placeholder confidence score
                 "analysis": "This appears to be a real image." if not isFake else "This appears to be a fake image."
             }
+            print("Detection result:", result)
 
         return result
 
@@ -74,6 +77,8 @@ async def process_image(request: DetectionImageRequest):
 async def generate_face(request: GenerationImageRequest):
     try:
         generation_type = request.type
+
+        print("Generation type:", generation_type)
 
         generated = None
         if generation_type == "random":
@@ -88,19 +93,25 @@ async def generate_face(request: GenerationImageRequest):
             img_array = np.ones((512, 512, 3), dtype=np.uint8) * 200
             generated = Image.fromarray(img_array)
 
-        buffered = io.BytesIO()
-        generated.save(buffered, format="PNG")
-        generated_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        buffer = io.BytesIO()
+        image = Image.fromarray(generated)
+
+        image.save(buffer, format="PNG")
+        image_bytes = buffer.getvalue()
+        base64_string = base64.b64encode(image_bytes).decode('utf-8')
+
+        print("Base64 string length:", len(base64_string))
 
         return {
             "success": True,
             "generated_image": {
-                "image": generated_image,
+                "image": base64_string,
                 "model_used": "GAN-Face-Generator-v1"
             }
         }
 
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"Error generating face: {str(e)}")
 
 

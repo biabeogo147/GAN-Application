@@ -43,7 +43,7 @@ class ApiService {
       };
 
       // Send request to server
-      final response = await _dio.post(
+      final response = await _dio.get(
         '$baseUrl/api/process-image',
         data: data,
       );
@@ -58,7 +58,7 @@ class ApiService {
   // Generate random face
   Future<Map<String, dynamic>> generateRandomFace() async {
     try {
-      final response = await _dio.post(
+      final response = await _dio.get(
         '$baseUrl/api/generate-face',
         data: {'type': 'random'},
       );
@@ -73,7 +73,7 @@ class ApiService {
   // Generate face from text description
   Future<Map<String, dynamic>> generateFaceFromText(String description) async {
     try {
-      final response = await _dio.post(
+      final response = await _dio.get(
         '$baseUrl/api/generate-face',
         data: {
           'type': 'text-to-image',
