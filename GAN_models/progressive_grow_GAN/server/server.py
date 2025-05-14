@@ -24,28 +24,24 @@ app.add_middleware(
 )
 
 class DetectionImageRequest(BaseModel):
-    image: str  # Base64 encoded image
-    mode: str = "detect"  # "detect" or "generate"
+    image: str
 
 
 class GenerationImageRequest(BaseModel):
-    type: str  # "random" or "text-to-image"
-    description: str = None  # Optional description for text-to-image generation
+    type: str
+    description: str = None
 
 
 @app.get("/api/process-image")
 async def process_image(request: DetectionImageRequest):
     try:
-        # Decode base64 image
         image_bytes = base64.b64decode(request.image)
         image = Image.open(io.BytesIO(image_bytes))
 
         print("Image format:", image.format)
 
-        # Get basic image info
         width, height = image.size
         format_name = image.format
-
         result = {
             "success": True,
             "image_info": {
@@ -56,13 +52,11 @@ async def process_image(request: DetectionImageRequest):
         }
 
         if request.mode == "detect":
-            # Here you would add your actual GAN detection logic
-            # For now, we'll return a placeholder
             label = fake_detect(image)
             isFake = label == "Fake"
             result["detection_result"] = {
                 "is_fake": isFake,
-                "confidence": random.uniform(0.75, 0.95),  # Placeholder confidence score
+                "confidence": random.uniform(0.75, 0.95),
                 "analysis": "This appears to be a real image." if not isFake else "This appears to be a fake image."
             }
             print("Detection result:", result)
@@ -95,7 +89,6 @@ async def generate_face(request: GenerationImageRequest):
 
         buffer = io.BytesIO()
         image = Image.fromarray(generated)
-
         image.save(buffer, format="PNG")
         image_bytes = buffer.getvalue()
         base64_string = base64.b64encode(image_bytes).decode('utf-8')
