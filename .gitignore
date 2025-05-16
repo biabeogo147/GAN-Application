@@ -1,0 +1,4 @@
+mobile_app/build
+.idea
+/mobile_app/android/app/build/
+/GAN_models/deep_convolution_GAN/main_script/models/
