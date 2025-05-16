@@ -76,5 +76,5 @@ def inference_pt():
 
 if __name__ == '__main__':
     # inference_pt()
-    # export_to_onnx()
-    inference_gen_model_onnx()
+    export_to_onnx()
+    # inference_gen_model_onnx()
