@@ -18,12 +18,10 @@ import '../binding/results_binding.dart';
 class FaceGenerationController extends GetxController {
   final ApiService _apiService = ApiService();
 
-  // State variables
   RxBool isLoading = false.obs;
   RxString generatedImagePath = ''.obs;
   RxMap<String, dynamic> results = <String, dynamic>{}.obs;
 
-  // Text controller for description input
   final TextEditingController descriptionController = TextEditingController();
 
   @override
@@ -32,7 +30,6 @@ class FaceGenerationController extends GetxController {
     super.onClose();
   }
 
-  // Generate random face
   Future<void> generateRandomFace() async {
     isLoading.value = true;
 
@@ -40,27 +37,22 @@ class FaceGenerationController extends GetxController {
       final response = await _apiService.generateRandomFace();
 
       if (response['success'] == true && response['generated_image'] != null) {
-        // Save base64 image to file
         final imagePath = await _saveBase64Image(response['generated_image']['image']);
         generatedImagePath.value = imagePath;
 
-        // Store results
         results.value = response;
 
-        // Navigate to results screen
         _navigateToResults(imagePath, response);
       } else {
-        CommonDialog.showError(message: 'Failed to generate random face');
         await _localGenerateRandomFace();
       }
     } catch (e) {
-      CommonDialog.showError(message: 'Error generating random face: $e');
+      await _localGenerateRandomFace();
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Generate face from text description
   Future<void> generateFaceFromText() async {
     if (descriptionController.text.isEmpty) {
       CommonDialog.showWarning(message: 'Please enter a description');
@@ -73,14 +65,11 @@ class FaceGenerationController extends GetxController {
       final response = await _apiService.generateFaceFromText(descriptionController.text);
 
       if (response['success'] == true && response['generated_image'] != null) {
-        // Save base64 image to file
         final imagePath = await _saveBase64Image(response['generated_image']['image']);
         generatedImagePath.value = imagePath;
 
-        // Store results
         results.value = response;
 
-        // Navigate to results screen
         _navigateToResults(imagePath, response);
       } else {
         CommonDialog.showError(message: 'Failed to generate face from description');
@@ -94,38 +83,63 @@ class FaceGenerationController extends GetxController {
 
   Future<void> _localGenerateRandomFace() async {
     isLoading.value = true;
-
     try {
-      final rawAssetFile = await rootBundle.load('assets/generator.onnx');
+      OrtEnv.instance.init();
+
+      final rawAssetFile = await rootBundle.load('lib/app/res/models/generator.onnx');
       final bytes = rawAssetFile.buffer.asUint8List();
       final sessionOptions = OrtSessionOptions();
       final session = OrtSession.fromBuffer(bytes, sessionOptions);
 
-      const int nz = 100;
+      const int latent = 100;
       final random = Random();
-      final noiseData = Float32List(1 * nz * 1 * 1);
+      final noiseData = Float32List(1 * latent * 1 * 1);
       for (int i = 0; i < noiseData.length; i++) {
         noiseData[i] = random.nextDouble() * 2 - 1;
       }
-      final input = OrtValueTensor.createTensorWithFloat32Data([1, nz, 1, 1], noiseData);
+      final inputOrt = OrtValueTensor.createTensorWithDataList(noiseData, [latent, 1, 1]);
+      final inputs = {'input': inputOrt};
 
-      final outputs = session.run([input]);
-      final outputTensor = outputs[0] as OrtValueTensor;
+      final runOptions = OrtRunOptions();
+      final outputs = await session.runAsync(runOptions, inputs);
 
-      // Chuyển tensor thành ảnh
-      final imageBytes = _tensorToImage(outputTensor);
-      setState(() {
-        _generatedImage = Image.memory(imageBytes);
-      });
+      inputOrt.release();
+      runOptions.release();
+      inputOrt.release();
+      runOptions.release();
 
+      final outputTensor = outputs?[0] as OrtValueTensor;
+      final shape = outputTensor.value;
+      print('Shape of outputTensor: $shape');
     } catch (e) {
       CommonDialog.showError(message: 'Error generating random face: $e');
     } finally {
       isLoading.value = false;
+      OrtEnv.instance.release();
     }
   }
 
-  // Save base64 image to file
+  // Uint8List _tensorToImage(OrtValueTensor tensor) {
+  //   final data = tensor.getTensorData() as Float32List;
+  //   final shape = tensor.getTensorShape(); // [1, 3, H, W]
+  //   final H = shape[2];
+  //   final W = shape[3];
+  //   final image = img.Image.fromBytes(W, H, data.buffer.asUint8List(),
+  //       format: img.Format.rgb);
+  //
+  //   // Giả sử output của Generator trong khoảng [-1, 1] (Tanh)
+  //   for (int y = 0; y < H; y++) {
+  //     for (int x = 0; x < W; x++) {
+  //       final idx = y * W + x;
+  //       final r = (data[idx] * 127.5 + 127.5).clamp(0, 255).toInt();
+  //       final g = (data[H * W + idx] * 127.5 + 127.5).clamp(0, 255).toInt();
+  //       final b = (data[2 * H * W + idx] * 127.5 + 127.5).clamp(0, 255).toInt();
+  //       image.setPixel(x, y, img.Color.fromRgb(r, g, b));
+  //     }
+  //   }
+  //   return Uint8List.fromList(img.encodePng(image));
+  // }
+
   Future<String> _saveBase64Image(String base64Image) async {
     final bytes = base64Decode(base64Image);
     final directory = await getTemporaryDirectory();
@@ -135,18 +149,15 @@ class FaceGenerationController extends GetxController {
     return imagePath;
   }
 
-  // Navigate to results screen
   void _navigateToResults(String imagePath, Map<String, dynamic> responseData) {
     final resultsController = ResultsController(
       imageFile: File(imagePath),
       results: responseData,
-      isDetectMode: false, // Always in generation mode
+      isDetectMode: false,
     );
 
-    // Put the controller in GetX DI
     Get.put<ResultsController>(resultsController);
 
-    // Navigate to results screen
     Get.to(
       () => const ResultsScreen(),
       binding: ResultsBinding(resultsController),

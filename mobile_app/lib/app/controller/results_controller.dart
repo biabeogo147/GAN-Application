@@ -28,7 +28,6 @@ class ResultsController extends GetxController {
         final base64Image = results['generated_image']['image'];
         final bytes = base64Decode(base64Image);
 
-        // Save to temp directory first
         final tempDir = await getTemporaryDirectory();
         final timestamp = DateTime.now().millisecondsSinceEpoch;
         final tempPath = '${tempDir.path}/generated_image_$timestamp.png';
@@ -36,7 +35,6 @@ class ResultsController extends GetxController {
         final file = File(tempPath);
         await file.writeAsBytes(bytes);
 
-        // Use share to save it
         await Share.shareXFiles([XFile(tempPath)], text: 'Generated Image');
 
         isLoading.value = false;
