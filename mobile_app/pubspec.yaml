@@ -53,7 +53,7 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   shared_preferences: ^2.0.6
   get: ^4.6.5
-  onnxruntime: ^1.4.1
+  flutter_onnxruntime: ^1.4.1
   image: ^4.2.0
 
 # For information on the generic Dart part of this file, see the

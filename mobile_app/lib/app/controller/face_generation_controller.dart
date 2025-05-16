@@ -1,13 +1,11 @@
 import 'dart:io';
-import 'dart:convert';
 import 'dart:math';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img;
 import 'package:onnxruntime/onnxruntime.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:mobile_app/app/service/api_service.dart';
 import 'package:mobile_app/app/ui/screen/results_screen.dart';
 import 'package:mobile_app/app/ui/widget/common_dialog.dart';
@@ -84,33 +82,36 @@ class FaceGenerationController extends GetxController {
   Future<void> _localGenerateRandomFace() async {
     isLoading.value = true;
     try {
-      OrtEnv.instance.init();
+      final ort = OnnxRuntime();
+      final session = await ort.createSessionFromAsset('lib/app/res/models/generator.onnx');
 
-      final rawAssetFile = await rootBundle.load('lib/app/res/models/generator.onnx');
-      final bytes = rawAssetFile.buffer.asUint8List();
-      final sessionOptions = OrtSessionOptions();
-      final session = OrtSession.fromBuffer(bytes, sessionOptions);
+      final inputName1 = session.inputNames[0];
+      final inputName2 = session.inputNames[1];
+      final outputName = session.outputNames[0];
 
-      const int latent = 100;
-      final random = Random();
-      final noiseData = Float32List(1 * latent * 1 * 1);
-      for (int i = 0; i < noiseData.length; i++) {
-        noiseData[i] = random.nextDouble() * 2 - 1;
+      final inputs = {
+        inputName1: await OrtValue.fromList([1, 1, 1], [3]),
+        inputName2: await OrtValue.fromList([2, 2, 2], [3])
       }
-      final inputOrt = OrtValueTensor.createTensorWithDataList(noiseData, [latent, 1, 1]);
-      final inputs = {'input': inputOrt};
 
-      final runOptions = OrtRunOptions();
-      final outputs = await session.runAsync(runOptions, inputs);
+      final outputs = await session.run(inputs);
 
-      inputOrt.release();
-      runOptions.release();
-      inputOrt.release();
-      runOptions.release();
+      print(await outputs[outputName]!.asList());
 
-      final outputTensor = outputs?[0] as OrtValueTensor;
-      final shape = outputTensor.value;
-      print('Shape of outputTensor: $shape');
+      for (final tensor in inputs.values) {
+        tensor.dispose();
+      }
+      for (final tensor in outputs.values) {
+        tensor.dispose();
+      }
+      await session.close();
+
+      // const int latent = 100;
+      // final random = Random();
+      // final noiseData = Float32List(1 * latent * 1 * 1);
+      // for (int i = 0; i < noiseData.length; i++) {
+      //   noiseData[i] = random.nextDouble() * 2 - 1;
+      // }
     } catch (e) {
       CommonDialog.showError(message: 'Error generating random face: $e');
     } finally {
@@ -118,27 +119,6 @@ class FaceGenerationController extends GetxController {
       OrtEnv.instance.release();
     }
   }
-
-  // Uint8List _tensorToImage(OrtValueTensor tensor) {
-  //   final data = tensor.getTensorData() as Float32List;
-  //   final shape = tensor.getTensorShape(); // [1, 3, H, W]
-  //   final H = shape[2];
-  //   final W = shape[3];
-  //   final image = img.Image.fromBytes(W, H, data.buffer.asUint8List(),
-  //       format: img.Format.rgb);
-  //
-  //   // Giả sử output của Generator trong khoảng [-1, 1] (Tanh)
-  //   for (int y = 0; y < H; y++) {
-  //     for (int x = 0; x < W; x++) {
-  //       final idx = y * W + x;
-  //       final r = (data[idx] * 127.5 + 127.5).clamp(0, 255).toInt();
-  //       final g = (data[H * W + idx] * 127.5 + 127.5).clamp(0, 255).toInt();
-  //       final b = (data[2 * H * W + idx] * 127.5 + 127.5).clamp(0, 255).toInt();
-  //       image.setPixel(x, y, img.Color.fromRgb(r, g, b));
-  //     }
-  //   }
-  //   return Uint8List.fromList(img.encodePng(image));
-  // }
 
   Future<String> _saveBase64Image(String base64Image) async {
     final bytes = base64Decode(base64Image);
