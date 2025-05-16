@@ -1,12 +1,17 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/controller/results_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
+import 'package:onnxruntime/onnxruntime.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:mobile_app/app/service/api_service.dart';
 import 'package:mobile_app/app/ui/screen/results_screen.dart';
 import 'package:mobile_app/app/ui/widget/common_dialog.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:mobile_app/app/controller/results_controller.dart';
 
 import '../binding/results_binding.dart';
 
@@ -46,6 +51,7 @@ class FaceGenerationController extends GetxController {
         _navigateToResults(imagePath, response);
       } else {
         CommonDialog.showError(message: 'Failed to generate random face');
+        await _localGenerateRandomFace();
       }
     } catch (e) {
       CommonDialog.showError(message: 'Error generating random face: $e');
@@ -81,6 +87,39 @@ class FaceGenerationController extends GetxController {
       }
     } catch (e) {
       CommonDialog.showError(message: 'Error generating face from description: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _localGenerateRandomFace() async {
+    isLoading.value = true;
+
+    try {
+      final rawAssetFile = await rootBundle.load('assets/generator.onnx');
+      final bytes = rawAssetFile.buffer.asUint8List();
+      final sessionOptions = OrtSessionOptions();
+      final session = OrtSession.fromBuffer(bytes, sessionOptions);
+
+      const int nz = 100;
+      final random = Random();
+      final noiseData = Float32List(1 * nz * 1 * 1);
+      for (int i = 0; i < noiseData.length; i++) {
+        noiseData[i] = random.nextDouble() * 2 - 1;
+      }
+      final input = OrtValueTensor.createTensorWithFloat32Data([1, nz, 1, 1], noiseData);
+
+      final outputs = session.run([input]);
+      final outputTensor = outputs[0] as OrtValueTensor;
+
+      // Chuyển tensor thành ảnh
+      final imageBytes = _tensorToImage(outputTensor);
+      setState(() {
+        _generatedImage = Image.memory(imageBytes);
+      });
+
+    } catch (e) {
+      CommonDialog.showError(message: 'Error generating random face: $e');
     } finally {
       isLoading.value = false;
     }
