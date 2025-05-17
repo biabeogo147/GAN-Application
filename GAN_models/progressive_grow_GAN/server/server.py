@@ -7,7 +7,7 @@ import uvicorn
 import numpy as np
 from PIL import Image
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from model.server_process import gen_image, fake_detect
 

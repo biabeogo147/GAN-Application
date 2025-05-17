@@ -1,0 +1,12 @@
+torch~=2.2.2+cu118
+numpy~=1.26.4
+matplotlib~=3.8.3
+torchvision~=0.17.2+cu118
+ipython~=8.12.3
+tqdm~=4.67.1
+opencv-python~=4.9.0.80
+pillow~=10.2.0
+transformers~=4.48.3
+uvicorn~=0.34.2
+pydantic~=2.11.4
+fastapi~=0.115.12

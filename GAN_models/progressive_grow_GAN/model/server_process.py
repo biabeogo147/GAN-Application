@@ -1,10 +1,6 @@
-import io
 import torch
-import base64
 import numpy as np
 import torchvision
-from PIL import Image
-from matplotlib import pyplot as plt
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 
