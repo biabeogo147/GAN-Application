@@ -51,15 +51,14 @@ async def process_image(request: DetectionImageRequest):
             }
         }
 
-        if request.mode == "detect":
-            label = fake_detect(image)
-            isFake = label == "Fake"
-            result["detection_result"] = {
-                "is_fake": isFake,
-                "confidence": random.uniform(0.75, 0.95),
-                "analysis": "This appears to be a real image." if not isFake else "This appears to be a fake image."
-            }
-            print("Detection result:", result)
+        label = fake_detect(image)
+        isFake = label == "Fake"
+        result["detection_result"] = {
+            "is_fake": isFake,
+            "confidence": random.uniform(0.75, 0.95),
+            "analysis": "This appears to be a real image." if not isFake else "This appears to be a fake image."
+        }
+        print("Detection result:", result)
 
         return result
 
