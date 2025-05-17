@@ -21,7 +21,6 @@ class FaceGenerationController extends GetxController {
   String? _selectedProvider;
   List<OrtProvider> _availableProviders = [];
   final String generatorPath = 'lib/app/res/models/generator.onnx';
-  final String discriminatorPath = 'lib/app/res/models/discriminator.onnx';
 
   static const int width = 64;
   static const int height = 64;
