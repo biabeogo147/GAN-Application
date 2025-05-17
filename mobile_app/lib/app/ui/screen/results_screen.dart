@@ -1,4 +1,3 @@
-// lib/app/ui/screen/results_screen.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,8 +19,8 @@ class ResultsScreen extends GetView<ResultsController> {
           controller.isDetectMode ? "Detection Results" : "Generated Image",
             style: const TextStyle(
               color: AppColors.blackText,
-              fontFamily: AppFonts.roboto,  // Use the font family name
-              fontWeight: FontWeight.w500,  // Use weight for Medium (500)
+              fontFamily: AppFonts.roboto,
+              fontWeight: FontWeight.w500,
             ),
         ),
         leading: IconButton(
@@ -94,9 +93,9 @@ class ResultsScreen extends GetView<ResultsController> {
           const SizedBox(height: 32),
 
           // Image info
-          Text(
+          const Text(
             "Image Information",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -108,9 +107,9 @@ class ResultsScreen extends GetView<ResultsController> {
           const SizedBox(height: 24),
 
           // Analysis
-          Text(
+          const Text(
             "Analysis",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -138,9 +137,7 @@ class ResultsScreen extends GetView<ResultsController> {
   Widget _buildGenerateResults() {
     final generatedImage = controller.results["generated_image"];
     final modelUsed = generatedImage["model_used"];
-    final imageBase64 = generatedImage["image"];
 
-    // Check if we have description (for text-to-image)
     final hasDescription = controller.results["description"] != null;
     final description = hasDescription ? controller.results["description"] : "";
 
@@ -149,10 +146,9 @@ class ResultsScreen extends GetView<ResultsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Generated image (now more prominent)
-          Text(
+          const Text(
             "Generated Face:",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -165,8 +161,8 @@ class ResultsScreen extends GetView<ResultsController> {
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Image.memory(
-                base64Decode(imageBase64),
+              child: Image.file(
+                controller.imageFile,
                 height: 300,
                 width: double.infinity,
                 fit: BoxFit.contain,
@@ -176,9 +172,9 @@ class ResultsScreen extends GetView<ResultsController> {
           const SizedBox(height: 24),
 
           // Generation details
-          Text(
+          const Text(
             "Generation Details:",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -186,13 +182,11 @@ class ResultsScreen extends GetView<ResultsController> {
           const SizedBox(height: 8),
           Text("Model used: $modelUsed"),
 
-          // Show description if available
           if (hasDescription) ...[
             const SizedBox(height: 8),
             Text("Description: $description"),
           ],
 
-          // Download button
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,

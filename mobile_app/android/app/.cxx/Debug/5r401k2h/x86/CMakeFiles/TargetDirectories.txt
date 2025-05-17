@@ -1,0 +1,2 @@
+D:/DS-AI/GAN-Application/mobile_app/android/app/.cxx/Debug/5r401k2h/x86/CMakeFiles/edit_cache.dir
+D:/DS-AI/GAN-Application/mobile_app/android/app/.cxx/Debug/5r401k2h/x86/CMakeFiles/rebuild_cache.dir

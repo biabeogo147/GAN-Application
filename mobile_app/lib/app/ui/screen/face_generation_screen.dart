@@ -21,12 +21,12 @@ class FaceGenerationScreen extends GetView<FaceGenerationController> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Instructions card
-                    Card(
+                    const Card(
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text('AI Face Generator',
                                 style: TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold)),

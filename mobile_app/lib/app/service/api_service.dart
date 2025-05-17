@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:mobile_app/app/ui/widget/common_dialog.dart';
@@ -50,7 +50,6 @@ class ApiService {
 
       return response.data;
     } catch (e) {
-      CommonDialog.showError(message: 'Failed to upload image: $e');
       return {'error': e.toString()};
     }
   }
@@ -65,7 +64,6 @@ class ApiService {
 
       return response.data;
     } catch (e) {
-      CommonDialog.showError(message: 'Failed to generate random face: $e');
       return {'error': e.toString()};
     }
   }
@@ -83,7 +81,6 @@ class ApiService {
 
       return response.data;
     } catch (e) {
-      CommonDialog.showError(message: 'Failed to generate face from description: $e');
       return {'error': e.toString()};
     }
   }
