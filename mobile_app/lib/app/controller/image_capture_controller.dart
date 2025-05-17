@@ -284,14 +284,14 @@ class ImageCaptureController extends GetxController {
     final response = {
       'success': true,
       'detection_result': {
-        'image_info': {
-          'width': width,
-          'height': height,
-          'channels': channels,
-        },
         'is_fake': isFake,
         'confidence': 0.3 + math.Random().nextDouble() * (0.6 - 0.3),
         'analysis': "This image is ${isFake ? 'fake' : 'real'}",
+      },
+      'image_info': {
+        'width': width,
+        'height': height,
+        'channels': channels,
       },
     };
 

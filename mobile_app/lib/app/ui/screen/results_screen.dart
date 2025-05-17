@@ -45,7 +45,7 @@ class ResultsScreen extends GetView<ResultsController> {
 
   Widget _buildDetectResults() {
     final result = controller.results["detection_result"];
-    final imageInfo = result["image_info"];
+    final imageInfo = controller.results["image_info"];
     final isFake = result["is_fake"];
     final confidence = result["confidence"];
     final analysis = result["analysis"];
