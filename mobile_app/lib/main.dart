@@ -10,6 +10,7 @@ void main() async {
     initialRoute: AppRoute.splash_screen,
     getPages: AppPages.pages,
     debugShowCheckedModeBanner: false,
+    locale: const Locale('en', 'US'),
     builder: (context, child) {
       return Scaffold(
         body: child,

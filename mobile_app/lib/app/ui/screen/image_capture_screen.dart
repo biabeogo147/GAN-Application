@@ -47,7 +47,7 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 48), // Balance the back button
+                    const SizedBox(width: 48),
                   ],
                 ),
               ),
@@ -65,10 +65,9 @@ class ImageCaptureScreen extends GetView<ImageCaptureController> {
             ? _buildPreviewArea()
             : _buildOptionsButtons(),
         const SizedBox(height: 20),
-        // Only show main action button when NOT in review mode
         if (controller.selectedImage.value != null &&
             !(controller.isCameraActive.value && controller.isReviewingImage.value))
-          Container(
+          SizedBox(
             width: double.infinity, // Full width
             child: TouchableWidget(
               onPressed: controller.analyzeImage,
